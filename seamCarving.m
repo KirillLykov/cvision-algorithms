@@ -2,11 +2,35 @@
 %
 % Distributed under the FreeBSD Software License (See accompanying file license.txt)
 
-function image = seamCarving(sizeReduction, image)
+function image = seamCarving(newSize, image)
 % apply seam carving to the image
 % following paper by Avidan and Shamir '07
+    sizeReductionX = size(image, 1) - newSize(1);
+    sizeReductionY = size(image, 2) - newSize(2);
+    
+    mmax = @(left, right) max([left right]);
+    
+    image = seamCarvingReduce([mmax(0, sizeReductionX), mmax(0, sizeReductionY)], image);
+    
+    image = seamCarvingEnlarge([mmax(0, -sizeReductionX), mmax(0, -sizeReductionY)], image);
+end
+
+function image = seamCarvingReduce(sizeReduction, image)
+    if (sizeReduction == 0)
+        return;
+    end;
     [T, transBitMask] = findTransportMatrix(sizeReduction, image);
-    image = deleteSeams(transBitMask, sizeReduction, image);
+    image = addOrDeleteSeams(transBitMask, sizeReduction, image, @reduceImageByMask);
+end
+
+% TODO Bug: enlarge gives artifacts althout I chouse different seams as described 
+% in 4.3 in the paper
+function image = seamCarvingEnlarge(sizeEnlarge, image)
+    if (sizeEnlarge == 0)
+        return;
+    end;
+    [T, transBitMask] = findTransportMatrix(sizeEnlarge, image);
+    image = addOrDeleteSeams(transBitMask, sizeEnlarge, image, @enlargeImageByMask);
 end
 
 function [T, transBitMask] = findTransportMatrix(sizeReduction, image)
@@ -77,7 +101,7 @@ function [T, transBitMask] = findTransportMatrix(sizeReduction, image)
 
 end
 
-function image = deleteSeams(transBitMask, sizeReduction, image)
+function image = addOrDeleteSeams(transBitMask, sizeReduction, image, operation)
 % delete seams following optimal way
     i = size(transBitMask, 1);
     j = size(transBitMask, 2);
@@ -87,11 +111,11 @@ function image = deleteSeams(transBitMask, sizeReduction, image)
         energy = energyRGB(image);
         if (transBitMask(i, j) == 0)
             [optSeamMask, seamEnergyRaw] = findOptSeam(energy');
-            image = reduceImageByMask(image, optSeamMask, 0);
+            image = operation(image, optSeamMask, 0);
             i = i - 1;
         else
             [optSeamMask, seamEnergyColumn] = findOptSeam(energy);
-            image = reduceImageByMask(image, optSeamMask, 1);
+            image = operation(image, optSeamMask, 1);
             j = j - 1;
         end;
 
@@ -169,6 +193,42 @@ function imageReduced = reduceImageByMaskHorizontal(image, seamMask)
         imageReduced(:, j, 2) = image(seamMask(:, j), j, 2);
         imageReduced(:, j, 3) = image(seamMask(:, j), j, 3);
     end
+end
+
+function imageEnlarged = enlargeImageByMask(image, seamMask, isVerical)
+% removes pixels by input mask
+% removes vertical line if isVerical == 1, otherwise horizontal
+    if (isVerical)
+        imageEnlarged = enlargeImageByMaskVertical(image, seamMask);
+    else
+        imageEnlarged = enlargeImageByMaskHorizontal(image, seamMask');
+    end;
+end
+
+function imageEnlarged = enlargeImageByMaskVertical(image, seamMask)
+
+    avg = @(image, i, j, k) (image(i, j, k) + image(i, j, k))/2;
+
+    imageEnlarged = zeros(size(image, 1), size(image, 2) + 1, size(image, 3));
+    for i = 1 : size(seamMask, 1)
+        j = find(seamMask(i, :) ~= 1);
+        imageEnlarged(i, :, 1) = [image(i, 1:j, 1), avg(image, i, j, 1), image(i, j+1:end, 1)];
+        imageEnlarged(i, :, 2) = [image(i, 1:j, 2), avg(image, i, j, 2), image(i, j+1:end, 2)];
+        imageEnlarged(i, :, 3) = [image(i, 1:j, 3), avg(image, i, j, 3), image(i, j+1:end, 3)];
+    end;
+end
+
+function imageEnlarged = enlargeImageByMaskHorizontal(image, seamMask)
+
+    avg = @(image, i, j, k) (image(i, j, k) + image(i, j, k))/2;
+
+    imageEnlarged = zeros(size(image, 1) + 1, size(image, 2), size(image, 3));
+    for j = 1 : size(seamMask, 2)
+        i = find(seamMask(:, j) ~= 1);
+        imageEnlarged(:, j, 1) = [image(1:i, j, 1); avg(image, i, j, 1); image(i+1:end, j, 1)];
+        imageEnlarged(:, j, 2) = [image(1:i, j, 2); avg(image, i, j, 2); image(i+1:end, j, 2)];
+        imageEnlarged(:, j, 3) = [image(1:i, j, 3); avg(image, i, j, 3); image(i+1:end, j, 3)];
+    end;
 end
 
 function res = energyRGB(I)
