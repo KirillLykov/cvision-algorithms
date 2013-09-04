@@ -220,7 +220,7 @@ end
 
 function imageEnlarged = enlargeImageByMaskHorizontal(image, seamMask)
 
-    avg = @(image, i, j, k) (image(i, j-1, k) + image(i, j+1, k))/2;
+    avg = @(image, i, j, k) (image(i-1, j, k) + image(i+1, j, k))/2;
 
     imageEnlarged = zeros(size(image, 1) + 1, size(image, 2), size(image, 3));
     for j = 1 : size(seamMask, 2)
