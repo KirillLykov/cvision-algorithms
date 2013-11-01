@@ -9,3 +9,5 @@ Algorithm and code are described in details http://kirilllykov.github.io/blog/20
 - bilateral filter ("Bilateral filtering for gray and color images" by C. Tomasi & R. Manduchi, 1998)
 - fast bilateral filter ("A fast approximation of the bilateral filter using a signal processing approach" by S. Paris & F. Durand, 2006)
 - retinex ("Retinex by two bilateral filters" by M. Elad, 2005)
+- shape from shading algorithm by Horn and Ikeuchi, the algorithm description can be found in "The Variational Approach to Shape from Shading"
+by B. Horn and M. Brooks, 1985
