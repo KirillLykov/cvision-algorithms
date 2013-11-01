@@ -12,3 +12,4 @@ Algorithm and code are described in details http://kirilllykov.github.io/blog/20
 - shape from shading algorithm by Horn and Ikeuchi ("The Variational Approach to Shape from Shading"
 by B. Horn and M. Brooks, 1985)
 - optical flow algorithm by  Horn-Shunck  for an array of input images ("Determining optical flow" by Horn and Schunck, 1980)
+- generator of random surface and closed curve, auxiliary code
