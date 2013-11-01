@@ -16,7 +16,7 @@ function output = retinexFilter( image, sigmaSpatial, sigmaRange, ...
 
     % 2. find illumination by filtering with envelope mode
     %illumination = fastBilateralFilter(illumination, sigmaSpatial, sigmaRange, samplingSpatial, samplingRange);
-    illumination = regBilatFilter(illumination, 1, sigmaSpatial, sigmaRange, 15);
+    illumination = regBilateralFilter(illumination, 1, sigmaSpatial, sigmaRange, 15);
     if (showPlots == 1)
         subplot(222);
         imagesc(illumination);
@@ -26,7 +26,7 @@ function output = retinexFilter( image, sigmaSpatial, sigmaRange, ...
     % at this point reflection stores original image
     reflection = (reflection - illumination);
     %reflection = fastBilateralFilter(reflection, sigmaSpatial, sigmaRange, samplingSpatial, samplingRange);
-    reflection = regBilatFilter(reflection, 0, sigmaSpatial, sigmaRange, 5);
+    reflection = regBilateralFilter(reflection, 0, sigmaSpatial, sigmaRange, 5);
     subplot(223);
     imagesc(exp(illumination));
 
