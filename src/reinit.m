@@ -1,3 +1,7 @@
+% (C) Copyright Kirill Lykov 2013.
+%
+% Distributed under the FreeBSD Software License (See accompanying file license.txt)
+
 function [res, eps] = reinit(phi, dt, h)
   % Solve reinitialization equation for the Signed Diatance Function
   % phi_t + sign(phi)(1 - |grad(phi)|)=0, which gives SDF with property |grad(phi)|=1
